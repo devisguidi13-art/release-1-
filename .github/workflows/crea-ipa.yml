@@ -1,0 +1,192 @@
+name: 'DVS Music 1.0.6 - Music First iPhone'
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v4
+
+      - name: Verifica motore di raccomandazione e statistiche
+        run: |
+          swiftc -swift-version 5 \
+            native-ios/DVSMusic/MusicTrack.swift \
+            native-ios/DVSMusic/MusicMetadata.swift \
+            native-ios/DVSMusic/MusicLibraryPlus.swift \
+            native-ios/DVSMusic/ListeningStore.swift \
+            native-ios/DVSMusic/RecommendationEngine.swift \
+            native-ios/DVSMusic/MusicDiscoveryService.swift \
+            native-ios/DVSMusic/CatalogService.swift \
+            native-ios/DVSMusic/AudiusSource.swift \
+            native-ios/DVSMusic/YouTubeMusicCatalog.swift \
+            native-ios/DVSMusic/CoverArtService.swift \
+            native-ios/DVSMusic/LastFMService.swift \
+            tests/native-core-check.swift \
+            -o /tmp/dvs-native-checks
+          /tmp/dvs-native-checks
+
+      - name: Testa nuove funzioni 0.8 e verifica privacy
+        run: |
+          plutil -lint native-ios/DVSMusic/Info.plist
+          swiftc -swift-version 5 \
+            native-ios/DVSMusic/MusicTrack.swift \
+            native-ios/DVSMusic/MusicMetadata.swift \
+            native-ios/DVSMusic/MusicLibraryPlus.swift \
+            native-ios/DVSMusic/ListeningStore.swift \
+            native-ios/DVSMusic/RecommendationEngine.swift \
+            native-ios/DVSMusic/MusicDiscoveryService.swift \
+            native-ios/DVSMusic/CatalogService.swift \
+            native-ios/DVSMusic/AudiusSource.swift \
+            native-ios/DVSMusic/YouTubeMusicCatalog.swift \
+            native-ios/DVSMusic/CoverArtService.swift \
+            native-ios/DVSMusic/LastFMService.swift \
+            tests/music-library-v08.swift \
+            -o /tmp/dvs-v08-checks
+          /tmp/dvs-v08-checks
+
+      - name: Testa DVS Intelligence 1.0.1 (regressioni e blocchi, offline)
+        run: |
+          swiftc -swift-version 5 \
+            native-ios/DVSMusic/MusicTrack.swift \
+            native-ios/DVSMusic/MusicMetadata.swift \
+            native-ios/DVSMusic/MusicLibraryPlus.swift \
+            native-ios/DVSMusic/ListeningStore.swift \
+            native-ios/DVSMusic/RecommendationEngine.swift \
+            native-ios/DVSMusic/MusicDiscoveryService.swift \
+            native-ios/DVSMusic/CatalogService.swift \
+            native-ios/DVSMusic/AudiusSource.swift \
+            native-ios/DVSMusic/YouTubeMusicCatalog.swift \
+            native-ios/DVSMusic/CoverArtService.swift \
+            native-ios/DVSMusic/LastFMService.swift \
+            tests/intelligence-v10.swift \
+            -o /tmp/dvs-intelligence-v10
+          /tmp/dvs-intelligence-v10
+
+      - name: Testa priorita ufficiale e copertine 1.0.2 (offline)
+        run: |
+          swiftc -swift-version 5 \
+            native-ios/DVSMusic/MusicTrack.swift \
+            native-ios/DVSMusic/MusicMetadata.swift \
+            native-ios/DVSMusic/MusicLibraryPlus.swift \
+            native-ios/DVSMusic/ListeningStore.swift \
+            native-ios/DVSMusic/RecommendationEngine.swift \
+            native-ios/DVSMusic/MusicDiscoveryService.swift \
+            native-ios/DVSMusic/CatalogService.swift \
+            native-ios/DVSMusic/AudiusSource.swift \
+            native-ios/DVSMusic/YouTubeMusicCatalog.swift \
+            native-ios/DVSMusic/CoverArtService.swift \
+            native-ios/DVSMusic/LastFMService.swift \
+            tests/official-cover-v102.swift \
+            -o /tmp/dvs-official-cover-v102
+          /tmp/dvs-official-cover-v102
+
+      - name: Testa radio 1.0.3 indipendente da YouTube (offline)
+        run: |
+          swiftc -swift-version 5 \
+            native-ios/DVSMusic/MusicTrack.swift \
+            native-ios/DVSMusic/MusicMetadata.swift \
+            native-ios/DVSMusic/MusicLibraryPlus.swift \
+            native-ios/DVSMusic/ListeningStore.swift \
+            native-ios/DVSMusic/RecommendationEngine.swift \
+            native-ios/DVSMusic/MusicDiscoveryService.swift \
+            native-ios/DVSMusic/CatalogService.swift \
+            native-ios/DVSMusic/AudiusSource.swift \
+            native-ios/DVSMusic/YouTubeMusicCatalog.swift \
+            native-ios/DVSMusic/LastFMService.swift \
+            tests/radio-v103.swift \
+            -o /tmp/dvs-radio-v103
+          /tmp/dvs-radio-v103
+          ! grep -q 'catalog.suggested(' native-ios/DVSMusic/RecommendationEngine.swift
+          grep -q 'player.startRadio(from: track)' native-ios/DVSMusic/ContentView.swift
+
+      - name: Testa le 20 categorie, nuove uscite e classifiche DVS (offline)
+        run: |
+          swiftc -swift-version 5 \
+            native-ios/DVSMusic/GenreChartsService.swift \
+            tests/charts-v104.swift \
+            -o /tmp/dvs-charts-v104
+          /tmp/dvs-charts-v104
+          test -f native-ios/DVSMusic/GenreChartsModel.swift
+          grep -q 'sheet(item: \$selectedGenre)' native-ios/DVSMusic/ContentView.swift
+
+      - name: Testa il multi motore YouTube + Audius (offline)
+        run: |
+          swiftc -swift-version 5 \
+            native-ios/DVSMusic/MusicTrack.swift \
+            native-ios/DVSMusic/MusicMetadata.swift \
+            native-ios/DVSMusic/CatalogService.swift \
+            native-ios/DVSMusic/AudiusSource.swift \
+            native-ios/DVSMusic/YouTubeMusicCatalog.swift \
+            tests/multisource-v105.swift \
+            -o /tmp/dvs-multisource-v105
+          /tmp/dvs-multisource-v105
+          ! grep -iq 'soundcloud.com/search' native-ios/DVSMusic/ContentView.swift
+
+      - name: Testa ricerca YouTube Music e fallback audio (offline)
+        run: |
+          swiftc -swift-version 5 \
+            native-ios/DVSMusic/MusicTrack.swift \
+            native-ios/DVSMusic/MusicMetadata.swift \
+            native-ios/DVSMusic/CatalogService.swift \
+            native-ios/DVSMusic/YouTubeMusicCatalog.swift \
+            native-ios/DVSMusic/AudiusSource.swift \
+            tests/music-search-v106.swift \
+            -o /tmp/dvs-v106-search
+          /tmp/dvs-v106-search
+
+      - name: Controlla sintassi di tutti i sorgenti Swift
+        run: |
+          for file in native-ios/DVSMusic/*.swift; do
+            swiftc -frontend -parse "$file"
+          done
+
+      - name: Installa XcodeGen
+        run: brew install xcodegen
+
+      - name: Genera progetto nativo iOS
+        working-directory: native-ios
+        run: xcodegen generate
+
+      - name: Compila app iPhone senza firma
+        working-directory: native-ios
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -resolvePackageDependencies -project DVSMusicNative.xcodeproj -scheme DVSMusicNative
+          xcodebuild \
+            -project DVSMusicNative.xcodeproj \
+            -scheme DVSMusicNative \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$PWD/ios-build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY='' \
+            build
+
+      - name: Crea file IPA non firmato
+        working-directory: native-ios
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP=$(find ios-build/Build/Products/Release-iphoneos -maxdepth 1 -type d -name '*.app' -print -quit)
+          test -n "$APP"
+          mkdir -p package/Payload
+          ditto "$APP" "package/Payload/$(basename "$APP")"
+          (cd package && zip -qry ../DVS_Music_v106_unsigned.ipa Payload)
+
+      - name: Scarica IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: DVS_Music_106_iPhone_IPA_non_firmato
+          path: native-ios/DVS_Music_v106_unsigned.ipa
+          retention-days: 14
+          if-no-files-found: error
