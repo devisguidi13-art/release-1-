@@ -1,0 +1,25 @@
+name: DVSMusicNative
+options:
+  bundleIdPrefix: app.dvsmusic
+  deploymentTarget:
+    iOS: '16.0'
+packages:
+  YouTubeKit:
+    url: https://github.com/alexeichhorn/YouTubeKit.git
+    exactVersion: 0.4.10
+targets:
+  DVSMusicNative:
+    type: application
+    platform: iOS
+    sources:
+      - path: DVSMusic
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.dvsmusic.native
+        INFOPLIST_FILE: DVSMusic/Info.plist
+        SWIFT_VERSION: '5.9'
+        TARGETED_DEVICE_FAMILY: '1'
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Manual
+    dependencies:
+      - package: YouTubeKit

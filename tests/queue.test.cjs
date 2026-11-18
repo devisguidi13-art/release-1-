@@ -1,0 +1,12 @@
+const assert = require('node:assert/strict');
+const { distinctTracks, rotateFromSelection, shuffleTracks, shuffleUpcoming, radioSuggestions } = require('./.build/queueLogic.js');
+const t = (id, artist = 'A', genre = 'Hip-Hop') => ({id, title: id, artist, genre, artwork: '', duration: 100, streamable: true});
+assert.deepEqual(distinctTracks([t('a'), t('b'), t('a')]).map(x=>x.id), ['a','b']);
+assert.deepEqual(rotateFromSelection(t('b'), [t('a'),t('b'),t('c')]).map(x=>x.id), ['b','c','a']);
+assert.deepEqual(shuffleTracks([1,2,3,4], ()=>0), [2,3,4,1]);
+const old = [t('a'),t('b'),t('c'),t('d'),t('e')];
+const order = shuffleUpcoming(old, 1, ()=>0);
+assert.deepEqual(order.slice(0,2).map(t=>t.id), ['a','b']);
+assert.deepEqual(new Set(order.map(t=>t.id)), new Set(old.map(t=>t.id)));
+assert.deepEqual(radioSuggestions(t('a'),[t('a'),t('b')], [t('b'),t('c','Other'),t('d','A'),t('c','Other')]).map(t=>t.id), ['d','c']);
+console.log('OK: 5 queue tests');

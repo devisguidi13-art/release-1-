@@ -1,0 +1,30 @@
+{
+  "name": "dvs-music-webview",
+  "version": "0.4.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "doctor": "expo-doctor",
+    "build:android": "eas build -p android --profile preview",
+    "build:ios": "eas build -p ios --profile preview",
+    "test:queue": "tsc queueLogic.ts --strict --skipLibCheck --target es2020 --module commonjs --outDir tests/.build && node tests/queue.test.cjs",
+    "test:youtube": "tsc youtubeLinks.ts --strict --skipLibCheck --target es2020 --module commonjs --outDir tests/.build && node tests/youtube.test.cjs"
+  },
+  "dependencies": {
+    "expo": "~58.0.23",
+    "expo-audio": "~58.0.12",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "react-native-webview": "14.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "typescript": "~5.9.2",
+    "expo-dev-client": "~58.0.21",
+    "expo-doctor": "^1.18.0"
+  }
+}
